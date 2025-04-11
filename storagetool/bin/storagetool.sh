@@ -78,17 +78,6 @@ save_config() {
     echo "BOOKS_DIR=$BOOKS_DIR" >> "$CONFIG_FILE"
 }
 
-# Print colored text if supported
-print_colored() {
-    if $COLOR_SUPPORT; then
-        color_code="$1"
-        shift
-        echo -e "${color_code}$*${RESET}"
-    else
-        echo "$*"
-    fi
-}
-
 # Format file size without using bc
 format_size() {
     size="$1"
@@ -159,19 +148,15 @@ cleanup() {
 # Get disk usage information
 get_disk_info() {
     clear
-    print_colored "$CYAN" "
-print_colored "$CYAN" "
+    echo "
 ██████  ██ ███████ ██   ██     ██ ███    ██ ███████  ██████  
 ██   ██ ██ ██      ██  ██      ██ ████   ██ ██      ██    ██ 
 ██   ██ ██ ███████ █████       ██ ██ ██  ██ █████   ██    ██ 
 ██   ██ ██      ██ ██  ██      ██ ██  ██ ██ ██      ██    ██ 
 ██████  ██ ███████ ██   ██     ██ ██   ████ ██       ██████  
-                                                             
                                                             
 "
-                        
-"
-    print_colored "$GREEN" "Analyzing disk space usage..."
+    echo "Analyzing disk space usage..."
     echo ""
     
     # Overall disk space
@@ -198,17 +183,21 @@ print_colored "$CYAN" "
 # Scan books directory
 scan_books_directory() {
     clear
-    print_colored "$CYAN" "
-██████   ██████   ██████  ██   ██     ███████  ██████  █████  ███    ██ 
-██   ██ ██    ██ ██    ██ ██  ██      ██      ██      ██   ██ ████   ██ 
-██████  ██    ██ ██    ██ █████       ███████ ██      ███████ ██ ██  ██ 
-██   ██ ██    ██ ██    ██ ██  ██           ██ ██      ██   ██ ██  ██ ██ 
-██████   ██████   ██████  ██   ██     ███████  ██████ ██   ██ ██   ████ 
-                                                                       
-                                                   
-                                                   
+    echo "
+██████   ██████   ██████  ██   ██ 
+██   ██ ██    ██ ██    ██ ██  ██  
+██████  ██    ██ ██    ██ █████   
+██   ██ ██    ██ ██    ██ ██  ██  
+██████   ██████   ██████  ██   ██ 
+                                  
+                                  
+███████  ██████  █████  ███    ██ 
+██      ██      ██   ██ ████   ██ 
+███████ ██      ███████ ██ ██  ██ 
+     ██ ██      ██   ██ ██  ██ ██ 
+███████  ██████ ██   ██ ██   ████                                                                                                                                        
 "
-    print_colored "$GREEN" "Scanning for books in $BOOKS_DIR (this may take a while)..."
+    echo "Scanning for books in $BOOKS_DIR (this may take a while)..."
     echo ""
     
     # Finding book files - using numeric sort
@@ -325,15 +314,16 @@ scan_books_directory() {
 # Analyze storage by file type
 analyze_by_type() {
     clear
-    print_colored "$CYAN" "
-███████ ██ ██      ███████ ████████ ██    ██ ██████  ███████ ███████ 
-██      ██ ██      ██         ██     ██  ██  ██   ██ ██      ██      
-█████   ██ ██      █████      ██      ████   ██████  █████   ███████ 
-██      ██ ██      ██         ██       ██    ██      ██           ██ 
-██      ██ ███████ ███████    ██       ██    ██      ███████ ███████ 
-                                                                               
+    echo "
+████████ ██    ██ ██████  ███████ ███████ 
+   ██     ██  ██  ██   ██ ██      ██      
+   ██      ████   ██████  █████   ███████ 
+   ██       ██    ██      ██           ██ 
+   ██       ██    ██      ███████ ███████ 
+                                          
+                                                     
 "
-    print_colored "$GREEN" "Analyzing books by file type in $BOOKS_DIR..."
+    echo "Analyzing books by file type in $BOOKS_DIR..."
     echo ""
     
     # Define common file extensions and their descriptions
@@ -385,7 +375,7 @@ analyze_by_type() {
     [ "$total_analyzed" -eq 0 ] && total_analyzed=1  # Prevent division by zero
     
     clear
-    print_colored "$CYAN" "File Type Analysis"
+    echo "File Type Analysis"
     echo "--------------------"
     cat "$TYPE_SUMMARY"
     echo ""
@@ -411,16 +401,14 @@ analyze_by_type() {
 # Scan for recent files
 scan_recent_files() {
     clear
-    print_colored "$CYAN" "
+    echo "
 ██████  ███████  ██████ ███████ ███    ██ ████████ 
 ██   ██ ██      ██      ██      ████   ██    ██    
 ██████  █████   ██      █████   ██ ██  ██    ██    
 ██   ██ ██      ██      ██      ██  ██ ██    ██    
-██   ██ ███████  ██████ ███████ ██   ████    ██    
-                                                  
-                             
+██   ██ ███████  ██████ ███████ ██   ████    ██                          
 "
-    print_colored "$GREEN" "Analyzing recently added books in $BOOKS_DIR..."
+    echo "Analyzing recently added books in $BOOKS_DIR..."
     echo ""
     
     # Find files modified in the last 30 days
@@ -488,16 +476,14 @@ scan_recent_files() {
 # Find duplicate files (basic implementation - can be expanded)
 find_duplicates() {
     clear
-    print_colored "$CYAN" "
+    echo "
 ██████  ██    ██ ██████  ███████ ███████ 
 ██   ██ ██    ██ ██   ██ ██      ██      
 ██   ██ ██    ██ ██████  █████   ███████ 
 ██   ██ ██    ██ ██      ██           ██ 
-██████   ██████  ██      ███████ ███████ 
-                                        
-                                             
+██████   ██████  ██      ███████ ███████                                             
 "
-    print_colored "$GREEN" "Scanning for duplicate books in $BOOKS_DIR..."
+    echo "Scanning for duplicate books in $BOOKS_DIR..."
     echo ""
     
     # This is a simple duplicate finder based on filenames
@@ -553,12 +539,12 @@ find_duplicates() {
 settings_menu() {
     while true; do
         clear
-        print_colored "$CYAN" "
+        echo "
 ███████ ███████ ████████ ████████ ██ ███    ██  ██████  ███████ 
 ██      ██         ██       ██    ██ ████   ██ ██       ██      
 ███████ █████      ██       ██    ██ ██ ██  ██ ██   ███ ███████ 
      ██ ██         ██       ██    ██ ██  ██ ██ ██    ██      ██ 
-███████ ███████    ██       ██    ██ ██   ████  ██████  ███████   
+███████ ███████    ██       ██    ██ ██   ████  ██████  ███████                                                    
 "
         echo "Current settings:"
         echo "--------------------------------"
@@ -651,17 +637,17 @@ main_menu() {
     
     while true; do
         clear
-        print_colored "$CYAN" "
-   _____ _                          _______          _ 
-  / ____| |                        |__   __|        | |
- | (___ | |_ ___  _ __ __ _  __ _  ___| | ___   ___ | |
-  \___ \| __/ _ \| '__/ _` |/ _` |/ _ \ |/ _ \ / _ \| |
-  ____) | || (_) | | | (_| | (_| |  __/ | (_) | (_) | |
- |_____/ \__\___/|_|  \__,_|\__, |\___|_|\___/ \___/|_|
-                             __/ |                     
-                            |___/                     
+        echo "
+ ____  ____  __  ____   __    ___  ____ 
+/ ___)(_  _)/  \(  _ \ / _\  / __)(  __)
+\___ \  )( (  O ))   //    \( (_ \ ) _) 
+(____/ (__) \__/(__\_)\_/\_/ \___/(____)
+         ____  __    __   __            
+        (_  _)/  \  /  \ (  )           
+          )( (  O )(  O )/ (_/\         
+         (__) \__/  \__/ \____/                       
 "
-        print_colored "$GREEN" "Version $VERSION"
+        echo "Version $VERSION"
         echo "https://github.com/jkpth/StorageTool"
         echo ""
         

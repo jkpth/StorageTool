@@ -19,6 +19,7 @@ cp config.xml "$RELEASE_DIR/$PACKAGE_NAME/"
 cp README.md "$RELEASE_DIR/$PACKAGE_NAME/"
 cp -r install "$RELEASE_DIR/$PACKAGE_NAME/"
 cp install.sh "$RELEASE_DIR/$PACKAGE_NAME/"
+cp online_install.sh "$RELEASE_DIR/$PACKAGE_NAME/"
 
 # Create zip package
 cd "$RELEASE_DIR"

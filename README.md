@@ -23,7 +23,16 @@ StorageTool helps Kindle users analyze, visualize, and manage their ebook collec
 
 ## Installation
 
-### Method 1: Install from USB
+### Method 1: One-Line Install (Recommended)
+
+1. On your Kindle, open KUAL and launch KTerm
+2. Run the following command:
+   ```
+   curl -s https://raw.githubusercontent.com/jptho/StorageTool/main/online_install.sh | sh
+   ```
+3. Restart KUAL to see StorageTool in your menu
+
+### Method 2: Install from USB
 
 1. Connect your Kindle to your computer via USB
 2. Copy the entire `storagetool` folder to the root of your Kindle

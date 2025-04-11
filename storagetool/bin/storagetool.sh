@@ -651,7 +651,7 @@ settings_menu() {
 # Main menu
 main_menu() {
     load_config
-    
+    fbgrab /mnt/us/screenshot.png
     while true; do
         clear
         print_colored "$CYAN" "
@@ -665,7 +665,7 @@ main_menu() {
                            |___/                   
 "
         print_colored "$GREEN" "Version $VERSION"
-        echo "A book storage management tool for Kindle"
+        echo "https://github.com/jkpth/storagetool"
         echo ""
         
         echo "MAIN MENU"

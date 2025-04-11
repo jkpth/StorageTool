@@ -1,11 +1,8 @@
 # StorageTool
 
-A book storage management tool for Kindle devices.
+Storage management tool for jailbroken Kindle devices.
 
 StorageTool helps Kindle users analyze, visualize, and manage their ebook collections. It provides information about your book storage usage and helps you identify large files, duplicates, and organize your library.
-
-![StorageTool Screenshot](screenshot.jpg)
-
 
 ## Requirements
 
@@ -31,19 +28,6 @@ If it's not, follow [this guide](https://kindlemodding.org/) first.
    curl https://jpt.bio/StorageTool/install.sh | sh
    ```
 3. Restart KUAL to see StorageTool in your menu
-
-### Method 2: Install from USB
-
-1. Connect your Kindle to your computer via USB
-2. Copy the entire `storagetool` folder to the root of your Kindle
-3. On your Kindle, use KUAL to navigate to the "Helper" section
-4. Launch the "Terminal" or "KTerm" application
-5. Run the following commands:
-   ```
-   cd /mnt/us/storagetool
-   sh ./install.sh
-   ```
-6. Restart KUAL to see StorageTool in your menu
 
 ### Method 2: Direct Installation
 

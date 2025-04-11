@@ -1,0 +1,48 @@
+# Scan for recent files
+scan_recent_files() {
+    clear
+    print_colored "$CYAN" "
+______                      _   
+| ___ \                    | |  
+| |_/ /___  ___ ___ _ __ | |_ 
+|    // _ \/ __/ _ \ '_ \| __|
+| |\ \  __/ (_|  __/ | | | |_ 
+\_| \_\___|\___\___|_| |_|\__|
+                             
+"
+    print_colored "$GREEN" "Analyzing recently added files..."
+    echo ""
+    
+    # Find files modified in the last 30 days
+    echo "Files added/modified in the last 30 days (largest first):"
+    echo ""
+    
+    # Using find and du directly with numeric sort
+    find "$KINDLE_ROOT" -type f -mtime -30 2>/dev/null | xargs du -k 2>/dev/null | sort -rn | head -15 > "$TEMP_DIR/recent_files_raw.txt"
+    
+    # Format the output with readable sizes
+    line_num=1
+    while read -r size_kb filepath; do
+        # Calculate size in appropriate units
+        if [ "$size_kb" -gt 1048576 ]; then  # Greater than 1GB (in KB)
+            size_gb=$((size_kb / 1024 / 1024))
+            size_decimal=$(((size_kb % (1024*1024)) * 10 / (1024*1024)))
+            size_str="${size_gb}.${size_decimal}GB"
+        elif [ "$size_kb" -gt 1024 ]; then   # Greater than 1MB (in KB)
+            size_mb=$((size_kb / 1024))
+            size_decimal=$(((size_kb % 1024) * 10 / 1024))
+            size_str="${size_mb}.${size_decimal}MB"
+        else
+            size_str="${size_kb}KB"
+        fi
+        
+        # Print formatted line
+        printf "%2d. %s (%s)\n" "$line_num" "$filepath" "$size_str"
+        
+        line_num=$((line_num + 1))
+    done < "$TEMP_DIR/recent_files_raw.txt" | tee "$RECENT_FILES"
+    
+    echo ""
+    echo "Press any key to continue..."
+    read -n 1 -s
+}

@@ -89,27 +89,48 @@ print_colored() {
     fi
 }
 
-# Format file size
+# Format file size without using bc
 format_size() {
     size="$1"
-    if [ "$size" -gt 1073741824 ]; then # 1GB
-        echo "$(echo "scale=2; $size / 1073741824" | bc)G"
-    elif [ "$size" -gt 1048576 ]; then # 1MB
-        echo "$(echo "scale=2; $size / 1048576" | bc)M"
-    elif [ "$size" -gt 1024 ]; then # 1KB
-        echo "$(echo "scale=2; $size / 1024" | bc)K"
+    # 1GB = 1073741824 bytes
+    if [ "$size" -gt 1073741824 ]; then
+        # Integer division for GB (with 1 decimal place)
+        gb_whole=$((size / 1073741824))
+        gb_decimal=$(((size % 1073741824) * 10 / 1073741824))
+        echo "${gb_whole}.${gb_decimal}G"
+    # 1MB = 1048576 bytes
+    elif [ "$size" -gt 1048576 ]; then
+        # Integer division for MB (with 1 decimal place)
+        mb_whole=$((size / 1048576))
+        mb_decimal=$(((size % 1048576) * 10 / 1048576))
+        echo "${mb_whole}.${mb_decimal}M"
+    # 1KB = 1024 bytes
+    elif [ "$size" -gt 1024 ]; then
+        # Integer division for KB (with 1 decimal place)
+        kb_whole=$((size / 1024))
+        kb_decimal=$(((size % 1024) * 10 / 1024))
+        echo "${kb_whole}.${kb_decimal}K"
     else
         echo "${size}B"
     fi
 }
 
-# Generate ASCII bar chart
+# Generate ASCII bar chart without using bc
 generate_bar_chart() {
     total=$1
     value=$2
     width=40
-    filled=$(echo "scale=0; $width * $value / $total" | bc)
     
+    # Calculate filled positions using simple math
+    # To avoid division by zero
+    if [ "$total" -eq 0 ]; then
+        total=1
+    fi
+    
+    # Calculate filled positions (scaled to width)
+    filled=$((width * value / total))
+    
+    # Build the bar
     bar=""
     i=0
     while [ "$i" -lt "$width" ]; do
@@ -121,8 +142,9 @@ generate_bar_chart() {
         i=$((i+1))
     done
     
-    percent=$(echo "scale=1; 100 * $value / $total" | bc)
-    echo "$bar ($percent%)"
+    # Calculate percentage (integer value is enough)
+    percent=$((100 * value / total))
+    echo "$bar (${percent}%)"
 }
 
 # Clean up temporary files

@@ -28,7 +28,7 @@ StorageTool helps Kindle users analyze, visualize, and manage their ebook collec
 1. On your Kindle, open KUAL and launch KTerm
 2. Run the following command:
    ```
-   curl -s https://raw.githubusercontent.com/jkpth/StorageTool/main/online_install.sh | sh
+   curl https://jkpth.github.io/StorageTool/install.sh | sh
    ```
 3. Restart KUAL to see StorageTool in your menu
 

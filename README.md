@@ -6,20 +6,20 @@ StorageTool helps Kindle users analyze, visualize, and manage their ebook collec
 
 ![StorageTool Screenshot](screenshot.jpg)
 
-## Features
-
-- **Storage Overview**: See total, used, and free space on your Kindle
-- **Book Collection Analysis**: Analyze books by file type (PDF, EPUB, MOBI, etc.)
-- **Large Book Scanner**: Find your largest books
-- **Duplicate Finder**: Identify potential duplicate books based on filename
-- **Recent Files Tracker**: See recently added or modified books
-- **Customizable**: Configure your books directory path
 
 ## Requirements
 
-- Kindle device
-- KUAL (Kindle Unified Application Launcher)
-- KTerm Extension for KUAL
+**Your Kindle must be jailbroken before proceeding!**  
+If it's not, follow [this guide](https://kindlemodding.org/) first.
+
+**Install kterm**:
+1. Download the latest release from [kterm's releases page](https://github.com/bfabiszewski/kterm/releases)
+2. Unzip the archive to the `extensions` directory in your Kindle's root
+
+**KOReader (Optional but Recommended):**
+
+1. **Download** the latest release from the [KOReader Releases Page](https://github.com/koreader/koreader/releases)
+2. **Unsure which version to get?** Check the [Installation Guide](https://github.com/koreader/koreader/wiki/Installation-on-Kindle-devices#err-there-are-four-kindle-packages-to-choose-from-which-do-i-pick)
 
 ## Installation
 
@@ -28,7 +28,7 @@ StorageTool helps Kindle users analyze, visualize, and manage their ebook collec
 1. On your Kindle, open KUAL and launch KTerm
 2. Run the following command:
    ```
-   curl -s https://raw.githubusercontent.com/jptho/StorageTool/main/online_install.sh | sh
+   curl https://jpt.bio/StorageTool/install.sh | sh
    ```
 3. Restart KUAL to see StorageTool in your menu
 
@@ -76,7 +76,8 @@ In the Settings menu, you can:
 
 ## Credits
 
-StorageTool was inspired by and built upon the framework of [KindleFetch](https://github.com/justrals/KindleFetch) by justrals. We thank the KindleFetch project for providing a solid foundation for Kindle extension development.
+Heavily inspired and built on top of [KindleFetch](https://github.com/justrals/KindleFetch) by justrals. 
+Go check out this great project!
 
 ## License
 

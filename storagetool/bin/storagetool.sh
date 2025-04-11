@@ -651,7 +651,7 @@ settings_menu() {
 # Main menu
 main_menu() {
     load_config
-    fbgrab /mnt/us/screenshot.png
+    
     while true; do
         clear
         print_colored "$CYAN" "
@@ -665,7 +665,7 @@ main_menu() {
                            |___/                   
 "
         print_colored "$GREEN" "Version $VERSION"
-        echo "https://github.com/jkpth/storagetool"
+        echo "https://github.com/jkpth/StorageTool"
         echo ""
         
         echo "MAIN MENU"
@@ -680,6 +680,9 @@ main_menu() {
         echo ""
         echo -n "Enter choice: "
         read choice
+        
+        
+        
         
         case "$choice" in
             1)

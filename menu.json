@@ -1,0 +1,5 @@
+{
+	"items": [
+		{"name": "StorageTool", "action": "sh run.sh"}
+	]
+}

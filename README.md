@@ -17,7 +17,7 @@ StorageTool helps Kindle users analyze, visualize, and manage their ebook collec
 
 ## Requirements
 
-- Kindle device
+- Jailbroken kindle device ([guide](https://kindlemodding.org/)
 - KUAL (Kindle Unified Application Launcher)
 - KTerm Extension for KUAL
 
@@ -28,7 +28,7 @@ StorageTool helps Kindle users analyze, visualize, and manage their ebook collec
 1. On your Kindle, open KUAL and launch KTerm
 2. Run the following command:
    ```
-   curl -s https://raw.githubusercontent.com/jptho/StorageTool/main/online_install.sh | sh
+   curl -s https://raw.githubusercontent.com/jkpth/StorageTool/main/online_install.sh | sh
    ```
 3. Restart KUAL to see StorageTool in your menu
 
@@ -76,7 +76,8 @@ In the Settings menu, you can:
 
 ## Credits
 
-StorageTool was inspired by and built upon the framework of [KindleFetch](https://github.com/justrals/KindleFetch) by justrals. We thank the KindleFetch project for providing a solid foundation for Kindle extension development.
+Heavily inspired and built on top of [KindleFetch](https://github.com/justrals/KindleFetch) by justrals. 
+Go check out this great project!
 
 ## License
 

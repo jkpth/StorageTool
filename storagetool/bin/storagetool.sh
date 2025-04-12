@@ -6,6 +6,7 @@ SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 CONFIG_FILE="$SCRIPT_DIR/.storagetool_config"
 VERSION_FILE="$SCRIPT_DIR/.version"
 VERSION="2.0.1"
+BOOK_EXTENSIONS="pdf epub mobi azw azw3 azw4 kfx txt doc docx"
 
 # Update variables
 UPDATE_AVAILABLE=false
@@ -54,10 +55,10 @@ init_environment() {
         echo "Some features may not work correctly on other systems."
         sleep 2
     fi
-    
+
     # Create temp directory
     mkdir -p "$TEMP_DIR"
-    
+
     # Check for color support
     if [ -t 1 ] && command -v tput >/dev/null && [ "$(tput colors 2>/dev/null || echo 0)" -ge 8 ]; then
         COLOR_SUPPORT=true
@@ -101,7 +102,7 @@ get_version() {
     }
 
     latest_sha=$(echo "$api_response" | grep -m1 '"sha":' | cut -d'"' -f4 | cut -c1-7)
-    
+
     if [ -n "$latest_sha" ]; then
         echo "${latest_sha}" > "$VERSION_FILE"
         echo "${latest_sha}"
@@ -114,12 +115,12 @@ get_version() {
 # Check for updates
 check_for_updates() {
     local current_sha=$(load_version)
-    
+
     local latest_sha=$(curl --insecure -s -H "Accept: application/vnd.github.v3+json" \
         -H "Cache-Control: no-cache" \
         "https://api.github.com/repos/jkpth/StorageTool/commits?per_page=1" | \
         grep -oE '"sha": "[0-9a-f]+"' | head -1 | cut -d'"' -f4 | cut -c1-7)
-    
+
     if [ -n "$latest_sha" ] && [ "$current_sha" != "$latest_sha" ]; then
         UPDATE_AVAILABLE=true
         return 0
@@ -160,16 +161,16 @@ generate_bar_chart() {
     total=$1
     value=$2
     width=40
-    
+
     # Calculate filled positions using simple math
     # To avoid division by zero
     if [ "$total" -eq 0 ]; then
         total=1
     fi
-    
+
     # Calculate filled positions (scaled to width)
     filled=$((width * value / total))
-    
+
     # Build the bar
     bar=""
     i=0
@@ -181,7 +182,7 @@ generate_bar_chart() {
         fi
         i=$((i+1))
     done
-    
+
     # Calculate percentage (integer value is enough)
     percent=$((100 * value / total))
     echo "$bar (${percent}%)"
@@ -200,32 +201,32 @@ cleanup() {
 get_disk_info() {
     clear
     echo "
-██████  ██ ███████ ██   ██     ██ ███    ██ ███████  ██████  
-██   ██ ██ ██      ██  ██      ██ ████   ██ ██      ██    ██ 
-██   ██ ██ ███████ █████       ██ ██ ██  ██ █████   ██    ██ 
-██   ██ ██      ██ ██  ██      ██ ██  ██ ██ ██      ██    ██ 
-██████  ██ ███████ ██   ██     ██ ██   ████ ██       ██████  
-                                                            
+██████  ██ ███████ ██   ██     ██ ███    ██ ███████  ██████
+██   ██ ██ ██      ██  ██      ██ ████   ██ ██      ██    ██
+██   ██ ██ ███████ █████       ██ ██ ██  ██ █████   ██    ██
+██   ██ ██      ██ ██  ██      ██ ██  ██ ██ ██      ██    ██
+██████  ██ ███████ ██   ██     ██ ██   ████ ██       ██████
+
 "
     echo "Analyzing disk space usage..."
     echo ""
-    
+
     # Overall disk space
     df_out=$(df -h /mnt/us 2>/dev/null)
     total_size=$(echo "$df_out" | awk 'NR==2 {print $2}')
     used_size=$(echo "$df_out" | awk 'NR==2 {print $3}')
     free_size=$(echo "$df_out" | awk 'NR==2 {print $4}')
     used_percent=$(echo "$df_out" | awk 'NR==2 {print $5}' | tr -d '%')
-    
+
     echo "Total storage: $total_size"
     echo "Used storage:  $used_size ($used_percent%)"
     echo "Free storage:  $free_size"
-    
+
     # Create visual representation
     echo ""
     echo "Storage usage:"
     generate_bar_chart 100 "$used_percent"
-    
+
     echo ""
     echo "Press any key to continue..."
     read -n 1 -s
@@ -235,38 +236,31 @@ get_disk_info() {
 scan_books_directory() {
     clear
     echo "
-██████   ██████   ██████  ██   ██ 
-██   ██ ██    ██ ██    ██ ██  ██  
-██████  ██    ██ ██    ██ █████   
-██   ██ ██    ██ ██    ██ ██  ██  
-██████   ██████   ██████  ██   ██ 
-                                  
-                                  
-███████  ██████  █████  ███    ██ 
-██      ██      ██   ██ ████   ██ 
-███████ ██      ███████ ██ ██  ██ 
-     ██ ██      ██   ██ ██  ██ ██ 
-███████  ██████ ██   ██ ██   ████                                                                                                                                        
+██████   ██████   ██████  ██   ██
+██   ██ ██    ██ ██    ██ ██  ██
+██████  ██    ██ ██    ██ █████
+██   ██ ██    ██ ██    ██ ██  ██
+██████   ██████   ██████  ██   ██
+
+
+███████  ██████  █████  ███    ██
+██      ██      ██   ██ ████   ██
+███████ ██      ███████ ██ ██  ██
+     ██ ██      ██   ██ ██  ██ ██
+███████  ██████ ██   ██ ██   ████
 "
     echo "Scanning for books in $BOOKS_DIR (this may take a while)..."
     echo ""
-    
+
     # Finding book files - using numeric sort
     echo "Book files found in directory:"
     echo ""
-    
+
     # Create temporary file for find patterns
-    echo "*.pdf" > "$TEMP_DIR/book_extensions.txt"
-    echo "*.epub" >> "$TEMP_DIR/book_extensions.txt"
-    echo "*.mobi" >> "$TEMP_DIR/book_extensions.txt"
-    echo "*.azw" >> "$TEMP_DIR/book_extensions.txt"
-    echo "*.azw3" >> "$TEMP_DIR/book_extensions.txt"
-    echo "*.azw4" >> "$TEMP_DIR/book_extensions.txt"
-    echo "*.kfx" >> "$TEMP_DIR/book_extensions.txt"
-    echo "*.txt" >> "$TEMP_DIR/book_extensions.txt"
-    echo "*.doc" >> "$TEMP_DIR/book_extensions.txt"
-    echo "*.docx" >> "$TEMP_DIR/book_extensions.txt"
-    
+    for extension in $BOOK_EXTENSIONS; do
+      echo "*.${extension}" > "$TEMP_DIR/book_extensions.txt"
+    done
+
     # Build the find command with 'or' conditions for each book extension
     find_cmd="find \"$BOOKS_DIR\" -type f \\( "
     first=true
@@ -279,13 +273,13 @@ scan_books_directory() {
         fi
     done < "$TEMP_DIR/book_extensions.txt"
     find_cmd="$find_cmd \\) 2>/dev/null"
-    
+
     # Count total books first
     total_books=$(eval "$find_cmd" | wc -l)
-    
+
     # Get total size
     total_size_kb=$(eval "$find_cmd" | xargs du -k 2>/dev/null | awk '{sum += $1} END {print sum}')
-    
+
     # Format total size
     if [ -z "$total_size_kb" ] || [ "$total_size_kb" -eq 0 ]; then
         total_size_str="0KB"
@@ -300,17 +294,17 @@ scan_books_directory() {
     else
         total_size_str="${total_size_kb}KB"
     fi
-    
+
     echo "Total books found: $total_books ($total_size_str)"
     echo ""
-    
+
     # Find largest books
     echo "Top 20 largest books:"
     echo ""
-    
+
     # Run the command with proper handling for spaces in filenames
     eval "$find_cmd" | xargs du -k 2>/dev/null | sort -rn | head -20 > "$TEMP_DIR/large_files_raw.txt"
-    
+
     # Check if we found any files
     if [ ! -s "$TEMP_DIR/large_files_raw.txt" ]; then
         echo "No book files found in $BOOKS_DIR."
@@ -319,7 +313,7 @@ scan_books_directory() {
         read -n 1 -s
         return
     fi
-    
+
     # Format the output with readable sizes
     line_num=1
     while read -r size_kb filepath; do
@@ -335,28 +329,28 @@ scan_books_directory() {
         else
             size_str="${size_kb}KB"
         fi
-        
+
         # Get filename and extension
         filename=$(basename "$filepath")
         ext=$(echo "$filepath" | awk -F. '{if (NF>1) print $NF}' | tr '[:upper:]' '[:lower:]')
-        
+
         # Print formatted line
         printf "%2d. %s (%s) [%s]\n" "$line_num" "$filename" "$size_str" "$ext"
-        
+
         line_num=$((line_num + 1))
     done < "$TEMP_DIR/large_files_raw.txt" | tee "$LARGE_FILES"
-    
+
     # Count by file type
     echo ""
     echo "Books by file type:"
-    
+
     while read -r ext; do
         # Remove leading *
         clean_ext=$(echo "$ext" | sed 's/^\*//')
         count=$(eval "$find_cmd" | grep -i "$clean_ext$" | wc -l)
         echo "- $(echo "$clean_ext" | tr '[:lower:]' '[:upper:]'): $count files"
     done < "$TEMP_DIR/book_extensions.txt"
-    
+
     echo ""
     echo "Press any key to continue..."
     read -n 1 -s
@@ -366,84 +360,84 @@ scan_books_directory() {
 analyze_by_type() {
     clear
     echo "
-████████ ██    ██ ██████  ███████ ███████ 
-   ██     ██  ██  ██   ██ ██      ██      
-   ██      ████   ██████  █████   ███████ 
-   ██       ██    ██      ██           ██ 
-   ██       ██    ██      ███████ ███████ 
-                                          
-                                                     
+████████ ██    ██ ██████  ███████ ███████
+   ██     ██  ██  ██   ██ ██      ██
+   ██      ████   ██████  █████   ███████
+   ██       ██    ██      ██           ██
+   ██       ██    ██      ███████ ███████
+
+
 "
     echo "Analyzing books by file type in $BOOKS_DIR..."
     echo ""
-    
+
     # Define common file extensions and their descriptions
     echo "Collecting data on file types..."
-    
+
     > "$TYPE_SUMMARY"
-    
+
     # E-books
     find "$BOOKS_DIR" -type f -name "*.azw" -o -name "*.azw3" -o -name "*.mobi" -o -name "*.kfx" 2>/dev/null |
         wc -l | awk '{printf("%-20s %8d files\n", "E-books:", $1)}' >> "$TYPE_SUMMARY"
-    
+
     # PDFs
     find "$BOOKS_DIR" -type f -name "*.pdf" 2>/dev/null |
         wc -l | awk '{printf("%-20s %8d files\n", "PDFs:", $1)}' >> "$TYPE_SUMMARY"
-    
+
     # Documents
     find "$BOOKS_DIR" -type f -name "*.doc" -o -name "*.docx" -o -name "*.txt" 2>/dev/null |
         wc -l | awk '{printf("%-20s %8d files\n", "Documents:", $1)}' >> "$TYPE_SUMMARY"
-    
+
     # EPUBs (separate category)
     find "$BOOKS_DIR" -type f -name "*.epub" 2>/dev/null |
         wc -l | awk '{printf("%-20s %8d files\n", "EPUBs:", $1)}' >> "$TYPE_SUMMARY"
-    
+
     # Now calculate sizes
     echo "Calculating sizes for each type (this may take a while)..."
-    
+
     # E-books size
-    ebook_size=$(find "$BOOKS_DIR" -type f -name "*.azw" -o -name "*.azw3" -o -name "*.mobi" -o -name "*.kfx" 2>/dev/null -exec du -cb {} \; | 
+    ebook_size=$(find "$BOOKS_DIR" -type f -name "*.azw" -o -name "*.azw3" -o -name "*.mobi" -o -name "*.kfx" 2>/dev/null -exec du -cb {} \; |
         grep "total$" | tail -1 | cut -f1)
     [ -z "$ebook_size" ] && ebook_size=0
-    
+
     # PDFs size
-    pdf_size=$(find "$BOOKS_DIR" -type f -name "*.pdf" 2>/dev/null -exec du -cb {} \; | 
+    pdf_size=$(find "$BOOKS_DIR" -type f -name "*.pdf" 2>/dev/null -exec du -cb {} \; |
         grep "total$" | tail -1 | cut -f1)
     [ -z "$pdf_size" ] && pdf_size=0
-    
+
     # Documents size
-    doc_size=$(find "$BOOKS_DIR" -type f -name "*.doc" -o -name "*.docx" -o -name "*.txt" 2>/dev/null -exec du -cb {} \; | 
+    doc_size=$(find "$BOOKS_DIR" -type f -name "*.doc" -o -name "*.docx" -o -name "*.txt" 2>/dev/null -exec du -cb {} \; |
         grep "total$" | tail -1 | cut -f1)
     [ -z "$doc_size" ] && doc_size=0
-    
+
     # EPUB size
-    epub_size=$(find "$BOOKS_DIR" -type f -name "*.epub" 2>/dev/null -exec du -cb {} \; | 
+    epub_size=$(find "$BOOKS_DIR" -type f -name "*.epub" 2>/dev/null -exec du -cb {} \; |
         grep "total$" | tail -1 | cut -f1)
     [ -z "$epub_size" ] && epub_size=0
-    
+
     # Calculate total content size for percentage
     total_analyzed=$((ebook_size + pdf_size + doc_size + epub_size))
     [ "$total_analyzed" -eq 0 ] && total_analyzed=1  # Prevent division by zero
-    
+
     clear
     echo "File Type Analysis"
     echo "--------------------"
     cat "$TYPE_SUMMARY"
     echo ""
-    
+
     echo "Storage Usage by Type:"
     echo "E-books:    $(format_size "$ebook_size")"
     generate_bar_chart "$total_analyzed" "$ebook_size"
-    
+
     echo "PDFs:       $(format_size "$pdf_size")"
     generate_bar_chart "$total_analyzed" "$pdf_size"
-    
+
     echo "Documents:  $(format_size "$doc_size")"
     generate_bar_chart "$total_analyzed" "$doc_size"
-    
+
     echo "EPUBs:      $(format_size "$epub_size")"
     generate_bar_chart "$total_analyzed" "$epub_size"
-    
+
     echo ""
     echo "Press any key to continue..."
     read -n 1 -s
@@ -453,32 +447,26 @@ analyze_by_type() {
 scan_recent_files() {
     clear
     echo "
-██████  ███████  ██████ ███████ ███    ██ ████████ 
-██   ██ ██      ██      ██      ████   ██    ██    
-██████  █████   ██      █████   ██ ██  ██    ██    
-██   ██ ██      ██      ██      ██  ██ ██    ██    
-██   ██ ███████  ██████ ███████ ██   ████    ██                          
+██████  ███████  ██████ ███████ ███    ██ ████████
+██   ██ ██      ██      ██      ████   ██    ██
+██████  █████   ██      █████   ██ ██  ██    ██
+██   ██ ██      ██      ██      ██  ██ ██    ██
+██   ██ ███████  ██████ ███████ ██   ████    ██
 "
     echo "Analyzing recently added books in $BOOKS_DIR..."
     echo ""
-    
+
     # Find files modified in the last 30 days
     echo "Books added/modified in the last 30 days (largest first):"
     echo ""
-    
+
     # Build the find command for books only
     find_cmd="find \"$BOOKS_DIR\" -type f \\( "
-    echo "*.pdf" > "$TEMP_DIR/book_extensions.txt"
-    echo "*.epub" >> "$TEMP_DIR/book_extensions.txt"
-    echo "*.mobi" >> "$TEMP_DIR/book_extensions.txt"
-    echo "*.azw" >> "$TEMP_DIR/book_extensions.txt"
-    echo "*.azw3" >> "$TEMP_DIR/book_extensions.txt"
-    echo "*.azw4" >> "$TEMP_DIR/book_extensions.txt"
-    echo "*.kfx" >> "$TEMP_DIR/book_extensions.txt"
-    echo "*.txt" >> "$TEMP_DIR/book_extensions.txt"
-    echo "*.doc" >> "$TEMP_DIR/book_extensions.txt"
-    echo "*.docx" >> "$TEMP_DIR/book_extensions.txt"
-    
+
+    for extension in $BOOK_EXTENSIONS; do
+      echo "*.${extension}" > "$TEMP_DIR/book_extensions.txt"
+    done
+
     first=true
     while read -r ext; do
         if $first; then
@@ -489,10 +477,10 @@ scan_recent_files() {
         fi
     done < "$TEMP_DIR/book_extensions.txt"
     find_cmd="$find_cmd \\) -mtime -30 2>/dev/null"
-    
+
     # Using find and du directly with numeric sort
     eval "$find_cmd" | xargs du -k 2>/dev/null | sort -rn | head -15 > "$TEMP_DIR/recent_files_raw.txt"
-    
+
     # Format the output with readable sizes
     line_num=1
     while read -r size_kb filepath; do
@@ -508,17 +496,17 @@ scan_recent_files() {
         else
             size_str="${size_kb}KB"
         fi
-        
+
         # Get filename and extension
         filename=$(basename "$filepath")
         ext=$(echo "$filepath" | awk -F. '{if (NF>1) print $NF}' | tr '[:upper:]' '[:lower:]')
-        
+
         # Print formatted line
         printf "%2d. %s (%s) [%s]\n" "$line_num" "$filename" "$size_str" "$ext"
-        
+
         line_num=$((line_num + 1))
     done < "$TEMP_DIR/recent_files_raw.txt" | tee "$RECENT_FILES"
-    
+
     echo ""
     echo "Press any key to continue..."
     read -n 1 -s
@@ -528,32 +516,26 @@ scan_recent_files() {
 find_duplicates() {
     clear
     echo "
-██████  ██    ██ ██████  ███████ ███████ 
-██   ██ ██    ██ ██   ██ ██      ██      
-██   ██ ██    ██ ██████  █████   ███████ 
-██   ██ ██    ██ ██      ██           ██ 
-██████   ██████  ██      ███████ ███████                                             
+██████  ██    ██ ██████  ███████ ███████
+██   ██ ██    ██ ██   ██ ██      ██
+██   ██ ██    ██ ██████  █████   ███████
+██   ██ ██    ██ ██      ██           ██
+██████   ██████  ██      ███████ ███████
 "
     echo "Scanning for duplicate books in $BOOKS_DIR..."
     echo ""
-    
+
     # This is a simple duplicate finder based on filenames
     # A more thorough approach would compare file checksums, but that's resource-intensive
-    
+
     echo "Looking for duplicate books..."
-    
+
     # Build the find command with 'or' conditions for each book extension
     find_cmd="find \"$BOOKS_DIR\" -type f \\( "
-    echo "*.pdf" > "$TEMP_DIR/book_extensions.txt"
-    echo "*.epub" >> "$TEMP_DIR/book_extensions.txt"
-    echo "*.mobi" >> "$TEMP_DIR/book_extensions.txt"
-    echo "*.azw" >> "$TEMP_DIR/book_extensions.txt"
-    echo "*.azw3" >> "$TEMP_DIR/book_extensions.txt"
-    echo "*.azw4" >> "$TEMP_DIR/book_extensions.txt"
-    echo "*.kfx" >> "$TEMP_DIR/book_extensions.txt"
-    echo "*.txt" >> "$TEMP_DIR/book_extensions.txt"
-    echo "*.doc" >> "$TEMP_DIR/book_extensions.txt"
-    echo "*.docx" >> "$TEMP_DIR/book_extensions.txt"
+
+    for extension in $BOOK_EXTENSIONS; do
+      echo "*.${extension}" > "$TEMP_DIR/book_extensions.txt"
+    done
     
     first=true
     while read -r ext; do

@@ -4,7 +4,11 @@
 # Variables
 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 CONFIG_FILE="$SCRIPT_DIR/.storagetool_config"
-VERSION="2.0.0"
+VERSION_FILE="$SCRIPT_DIR/.version"
+VERSION="2.0.1"
+
+# Update variables
+UPDATE_AVAILABLE=false
 
 # Default directories to analyze
 KINDLE_ROOT="/mnt/us"
@@ -76,6 +80,53 @@ save_config() {
     echo "CONDENSED_OUTPUT=$CONDENSED_OUTPUT" >> "$CONFIG_FILE"
     echo "DEBUG_MODE=$DEBUG_MODE" >> "$CONFIG_FILE"
     echo "BOOKS_DIR=$BOOKS_DIR" >> "$CONFIG_FILE"
+}
+
+# Load or create version file
+load_version() {
+    if [ -f "$VERSION_FILE" ]; then
+        cat "$VERSION_FILE"
+    else
+        echo "Creating version file..."
+        get_version
+    fi
+}
+
+# Get current version from GitHub
+get_version() {
+    api_response=$(curl --insecure -s -H "Accept: application/vnd.github.v3+json" "https://api.github.com/repos/jkpth/StorageTool/commits") || {
+        echo "Warning: Failed to fetch version from GitHub API" >&2
+        echo "unknown"
+        return
+    }
+
+    latest_sha=$(echo "$api_response" | grep -m1 '"sha":' | cut -d'"' -f4 | cut -c1-7)
+    
+    if [ -n "$latest_sha" ]; then
+        echo "${latest_sha}" > "$VERSION_FILE"
+        echo "${latest_sha}"
+    else
+        echo "$VERSION" > "$VERSION_FILE"
+        echo "$VERSION"
+    fi
+}
+
+# Check for updates
+check_for_updates() {
+    local current_sha=$(load_version)
+    
+    local latest_sha=$(curl --insecure -s -H "Accept: application/vnd.github.v3+json" \
+        -H "Cache-Control: no-cache" \
+        "https://api.github.com/repos/jkpth/StorageTool/commits?per_page=1" | \
+        grep -oE '"sha": "[0-9a-f]+"' | head -1 | cut -d'"' -f4 | cut -c1-7)
+    
+    if [ -n "$latest_sha" ] && [ "$current_sha" != "$latest_sha" ]; then
+        UPDATE_AVAILABLE=true
+        return 0
+    else
+        UPDATE_AVAILABLE=false
+        return 1
+    fi
 }
 
 # Format file size without using bc
@@ -552,7 +603,8 @@ settings_menu() {
         echo "2. Use condensed output: $CONDENSED_OUTPUT"
         echo "3. Debug mode: $DEBUG_MODE"
         echo "4. Books directory: $BOOKS_DIR"
-        echo "5. Back to main menu"
+        echo "5. Check for updates"
+        echo "6. Back to main menu"
         echo ""
         echo -n "Choose option: "
         read choice
@@ -621,6 +673,29 @@ settings_menu() {
                 sleep 2
                 ;;
             5)
+                check_for_updates
+                if [ "$UPDATE_AVAILABLE" = true ]; then
+                    echo "Update is available! Would you like to update? [y/N]: "
+                    read confirm
+
+                    if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]; then
+                        echo "Installing update..."
+                        if curl --insecure -s https://jkpth.github.io/StorageTool/install.sh | sh; then
+                            echo "Update installed successfully! The tool will now restart."
+                            UPDATE_AVAILABLE=false
+                            VERSION=$(load_version)
+                            exec "$SCRIPT_DIR/../run.sh"
+                        else
+                            echo "Failed to install update"
+                            sleep 2
+                        fi
+                    fi
+                else
+                    echo "You're already running the latest version!"
+                    sleep 2
+                fi
+                ;;
+            6)
                 break
                 ;;
             *)
@@ -634,6 +709,8 @@ settings_menu() {
 # Main menu
 main_menu() {
     load_config
+    VERSION=$(load_version)
+    check_for_updates
     
     while true; do
         clear
@@ -659,14 +736,17 @@ main_menu() {
         echo "4. Recent Files"
         echo "5. Find Duplicates"
         echo "6. Settings"
-        echo "7. Exit"
+        if [ "$UPDATE_AVAILABLE" = true ]; then
+            echo "7. Check for Updates (UPDATE AVAILABLE!)"
+            echo "8. Exit"
+        else
+            echo "7. Check for Updates"
+            echo "8. Exit"
+        fi
         echo ""
         echo -n "Enter choice: "
         read choice
-        
-        
-        
-        
+
         case "$choice" in
             1)
                 get_disk_info
@@ -687,6 +767,29 @@ main_menu() {
                 settings_menu
                 ;;
             7)
+                check_for_updates
+                if [ "$UPDATE_AVAILABLE" = true ]; then
+                    echo "Update is available! Would you like to update? [y/N]: "
+                    read confirm
+
+                    if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]; then
+                        echo "Installing update..."
+                        if curl --insecure -s https://jkpth.github.io/StorageTool/install.sh | sh; then
+                            echo "Update installed successfully! The tool will now restart."
+                            UPDATE_AVAILABLE=false
+                            VERSION=$(load_version)
+                            exec "$SCRIPT_DIR/../run.sh"
+                        else
+                            echo "Failed to install update"
+                            sleep 2
+                        fi
+                    fi
+                else
+                    echo "You're already running the latest version!"
+                    sleep 2
+                fi
+                ;;
+            8)
                 cleanup
                 echo "Thank you for using StorageTool!"
                 exit 0

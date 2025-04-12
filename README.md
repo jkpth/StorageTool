@@ -49,6 +49,7 @@ Launch StorageTool from the KUAL menu. From there, you can:
 4. **Recent Files**: View recently added or modified books
 5. **Find Duplicates**: Identify potential duplicate books
 6. **Settings**: Configure StorageTool options and set your books directory
+7. **Check for Updates**: Automatically check for and install the latest version of StorageTool
 
 ## Configuration
 
@@ -75,5 +76,6 @@ This project is open source software, feel free to modify and distribute as need
 
 ## Version History
 
+- **v2.0.1**: Added auto-update feature to check for and install the latest version
 - **v2.0.0**: Initial public release with book management focus
 - **v1.0.0**: Original development version based on KindleFetch
